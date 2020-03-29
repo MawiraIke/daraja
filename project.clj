@@ -18,7 +18,10 @@
                  [ring "1.7.1"]
                  [ring/ring-defaults "0.3.2"]
                  [bk/ring-gzip "0.3.0"]
-                 [ring-cljsjs "0.2.0"]]
+                 [ring-cljsjs "0.2.0"]
+                 [com.cognitect/transit-clj  "0.8.313"]
+                 [com.cognitect/transit-cljs "0.8.256"]]
+
 
   :source-paths ["src/clj" "src/cljs"]
 
