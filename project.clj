@@ -8,9 +8,11 @@
 
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.520"]
-                 [reagent "0.8.1"]]
+                 [reagent "0.8.1"]
+                 [clojure-mpesa-wrapper "1.0.0-SNAPSHOT"]
+                 [com.taoensso/sente "1.15.0"]]
 
-  :source-paths ["src"]
+  :source-paths ["src/clj" "src/cljs"]
 
   :aliases {"fig"       ["trampoline" "run" "-m" "figwheel.main"]
             "fig:build" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
