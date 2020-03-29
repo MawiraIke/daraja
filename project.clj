@@ -10,7 +10,15 @@
                  [org.clojure/clojurescript "1.10.520"]
                  [reagent "0.8.1"]
                  [clojure-mpesa-wrapper "1.0.0-SNAPSHOT"]
-                 [com.taoensso/sente "1.15.0"]]
+                 [com.taoensso/sente "1.15.0"]
+                 [aleph "0.4.6"]
+                 [re-frame "0.12.0"]
+                 [compojure "1.6.1"]
+                 [cheshire "5.9.0"]
+                 [ring "1.7.1"]
+                 [ring/ring-defaults "0.3.2"]
+                 [bk/ring-gzip "0.3.0"]
+                 [ring-cljsjs "0.2.0"]]
 
   :source-paths ["src/clj" "src/cljs"]
 
