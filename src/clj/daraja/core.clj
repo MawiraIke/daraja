@@ -31,8 +31,19 @@
       {:keys [ch-recv send-fn connected-uids ajax-post-fn ajax-get-or-ws-handshake-fn]} chsk-server]
   (def ring-ajax-post ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
-  (defn ch-chsk ch-recv)
+  (def ch-chsk ch-recv)
+  (def chsk-send! send-fn)
   (def connected-uids connected-uids))
+
+(defn send-all!
+  [data]
+  (doseq [uid (:any @connected-uids)]
+    (chsk-send! uid data)))
+
+(add-watch connected-uids :connected-uids
+           (fn [_ _ old new]
+             (when (not= old new)
+               (infof "Connected uids change: %s" new))))
 
 (defn unique-id
   "Get a unique id for a session."
@@ -137,7 +148,7 @@
     (try
       (if (and (Desktop/isDesktopSupported)
                (.isSupported (Desktop/getDesktop) Desktop$Action/BROWSE))
-        (.browse (Desktop/getDesktop) (URI uri))
+        (.browse (Desktop/getDesktop) (URI. uri))
         (.exec (Runtime/getRuntime) (str "xdg-open" uri)))
       (Thread/sleep 7500)
       (catch HeadlessException _))))
@@ -156,5 +167,5 @@
    (start-router!)))
 
 (defn -main []
-  ;;(start-server! 10666)
+  (start-server! 10666)
   )
