@@ -40,10 +40,14 @@
   (doseq [uid (:any @connected-uids)]
     (chsk-send! uid data)))
 
+(send-all! "Trial")
+
 (add-watch connected-uids :connected-uids
            (fn [_ _ old new]
              (when (not= old new)
                (infof "Connected uids change: %s" new))))
+(defn connected-uids? []
+  @connected-uids)
 
 (defn unique-id
   "Get a unique id for a session."

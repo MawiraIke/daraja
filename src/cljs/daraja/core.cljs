@@ -24,7 +24,7 @@
 (defn hello-world []
   [:div
    [:h1 (:text @app-state)]
-   [:h3 "Edit this in src/daraja/core.cljs and watch it change! Hope so!"]])
+   [:h3 "Edit this in src/daraja/core.cljs and watch it change!"]])
 
 (defn mount [el]
   (reagent/render-component [hello-world] el))
@@ -33,17 +33,39 @@
   (when-let [el (get-app-element)]
     (mount el)))
 
+;;;; Util for logging output to on-screen console
+
+(def output-el (.getElementById js/document "output"))
+(defn ->output! [fmt & args]
+  (let [msg (apply encore/format fmt args)]
+    (timbre/debug msg)
+    (aset output-el "value" (str "• " (.-value output-el) "\n" msg))
+    (aset output-el "scrollTop" (.-scrollHeight output-el))))
+
+(->output! "ClojureScript appears to have loaded correctly.")
+
+(def ?csrf-token
+  (when-let [el (.getElementById js/document "sente-csrf-token")]
+    (.getAttribute el "data-csrf-token")))
+
+(if ?csrf-token
+  (->output! "CSRF token detected in HTML, great!")
+  (->output! "CSRF token NOT detected in HTML, default Sente config will reject requests"))
 
 
 (let [packer (sente-transit/get-transit-packer)
       {:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket-client! "/chsk"
+                                         ?csrf-token
                                          {:type :auto
                                           :packer packer})]
   (def chsk chsk)
   (def ch-chsk ch-recv)
   (def chsk-send! send-fn)
   (def chsk-state state))
+
+
+;; Sente event handlers
 
 (defmulti -event-msg-handler :id)
 
@@ -78,11 +100,12 @@
       :daraja.core/auth (swap! app-state assoc :view-spec msg)
       (debugf "Push event from server: %s" ?data))))
 
-(def router_ (atom nil))
+;; TODO Add (defmethod -event-msg-handler <event-id> [ev-msg] <body>)s here...
 
+;; Sente event router (our `event-msg-handler` loop)
+(def router_ (atom nil))
 (defn stop-router! []
   (when-let [stop-f @router_] (stop-f)))
-
 (defn start-router! []
   (stop-router!)
   (reset! router_ (sente/start-client-chsk-router! ch-chsk event-msg-handler)))
