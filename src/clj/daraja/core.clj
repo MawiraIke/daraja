@@ -27,7 +27,8 @@
 (log/set-level! :info)
 
 (let [packer (sente-transit/get-transit-packer)
-      chsk-server (sente/make-channel-socket-server! (get-sch-adapter) {:packer packer})
+      chsk-server (sente/make-channel-socket-server! (get-sch-adapter) {:packer packer
+                                                                        :csrf-token-fn nil})
       {:keys [ch-recv send-fn connected-uids ajax-post-fn ajax-get-or-ws-handshake-fn]} chsk-server]
   (def ring-ajax-post ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
@@ -40,7 +41,7 @@
   (doseq [uid (:any @connected-uids)]
     (chsk-send! uid data)))
 
-(send-all! "Trial")
+;;(send-all! "Trial")
 
 (add-watch connected-uids :connected-uids
            (fn [_ _ old new]
@@ -112,6 +113,14 @@
       (wrap-cljsjs)
       (wrap-gzip)))
 
+(defn test-fast-server>user-pushes
+  "Quickly pushes 100 events to all connected users. Note that this'll be
+  fast+reliable even over Ajax!"
+  []
+  (doseq [uid (:any @connected-uids)]
+    (doseq [i (range 100)]
+      (chsk-send! uid [:fast-push/is-fast (str "hello " i "!!")]))))
+
 (defmulti -event-msg-handler :id)
 
 (defn event-msg-handler [{:as ev-msg :keys [id ?data event]}]
@@ -125,6 +134,10 @@
     (tracef "Unhandled event: %s" event)
     (when ?reply-fn
       (?reply-fn {:umatched-event-as-echoed-from-from-server event}))))
+
+(defmethod -event-msg-handler :example/test-rapid-push
+  [ev-msg] (test-fast-server>user-pushes))
+
 
 (defonce router_ (atom nil))
 (defn stop-router! [] (when-let [stop-fn @router_] (stop-fn)))
