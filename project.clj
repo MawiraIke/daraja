@@ -12,7 +12,6 @@
                  [clojure-mpesa-wrapper "1.0.0-SNAPSHOT"]
                  [com.taoensso/sente "1.15.0"]
                  [aleph "0.4.6"]
-                 [re-frame "0.12.0"]
                  [compojure "1.6.1"]
                  [cheshire "5.9.0"]
                  [ring "1.7.1"]
