@@ -5,7 +5,6 @@
     [ring.middleware.cljsjs :refer [wrap-cljsjs]]
     [ring.util.response :as response]
     [ring.middleware.anti-forgery :refer (*anti-forgery-token*)]
-    [clojure-mpesa-wrapper.core :as mpesa]
     [compojure.core :as comp :refer (defroutes GET POST)]
     [compojure.route :as route]
     [clojure.core.async :as async :refer (<! <!! >! >!! put! chan go go-loop)]
@@ -16,11 +15,20 @@
     [taoensso.sente.server-adapters.aleph :refer (get-sch-adapter)]
     [taoensso.sente.packers.transit :as sente-transit]
     [cheshire.core :as json]
-    [clojure.java.io :as io])
+    [clojure.java.io :as io]
+    ;; daraja api
+    [clojure-mpesa-wrapper.core :as mpesa]
+    [daraja.Keys :as kys])
   (:import (java.io File Closeable)
            (java.awt Desktop HeadlessException Desktop$Action)
            (java.net URI)
            (java.util UUID)))
+
+
+(defn encode [a-string]
+  (mpesa/encode a-string))
+(defn auth [key-string secret-string]
+  (mpesa/auth key-string secret-string))
 
 (def default-port 10666)
 
@@ -35,20 +43,10 @@
   (def ch-chsk ch-recv)
   (def chsk-send! send-fn)
   (def connected-uids connected-uids))
-
-(defn send-all!
-  [data]
-  (doseq [uid (:any @connected-uids)]
-    (chsk-send! uid data)))
-
-(send-all! [::auth {:?data "Sicce"}])
-
 (add-watch connected-uids :connected-uids
            (fn [_ _ old new]
              (when (not= old new)
                (infof "Connected uids change: %s" new))))
-(defn connected-uids? []
-  @connected-uids)
 
 (defn unique-id
   "Get a unique id for a session."
@@ -73,8 +71,13 @@
        (File/separatorChar)
        path2))
 
-(defonce current-root-dir (atom ""))
+(defn send-message [broadcast message]
+  (doseq [uid (:any @connected-uids)]
+    (chsk-send! uid
+                [broadcast
+                 (assoc message :to-whom uid)])))
 
+(defonce current-root-dir (atom ""))
 (defroutes my-routes
            (GET "/" req (response/content-type
                           {:status  200
@@ -113,6 +116,7 @@
       (wrap-cljsjs)
       (wrap-gzip)))
 
+;; test rapid server to user pushes
 (defn test-fast-server>user-pushes
   "Quickly pushes 100 events to all connected users. Note that this'll be
   fast+reliable even over Ajax!"
@@ -121,6 +125,7 @@
     (doseq [i (range 100)]
       (chsk-send! uid [:fast-push/is-fast (str "hello " i "!!")]))))
 
+;; test server to user broadcasts
 (defonce broadcast-enabled?_ (atom true))
 (defn start-example-broadcaster!
   "As an example of server>user async pushes, setup a loop to broadcast an
@@ -130,13 +135,10 @@
         (fn [i]
           (let [uids (:any @connected-uids)]
             (debugf "Broadcasting server>user: %s uids" (count uids))
-            (doseq [uid uids]
-              (chsk-send! uid
-                          [:some/broadcast
-                           {:what-is-this "An async broadcast pushed from server"
-                            :how-often "Every 10 seconds"
-                            :to-whom uid
-                            :i i}]))))]
+            (send-message :some/broadcast
+                          {:what-is-this "An async broadcast pushed from server"
+                           :how-often    "Every 10 seconds"
+                           :i            i})))]
 
     (go-loop [i 0]
       (<! (async/timeout 10000))
@@ -155,6 +157,20 @@
     (tracef "Unhandled event: %s" event)
     (when ?reply-fn
       (?reply-fn {:umatched-event-as-echoed-from-from-server event}))))
+(defmethod -event-msg-handler :example/test-rapid-push
+  [ev-msg] (test-fast-server>user-pushes))
+(defmethod -event-msg-handler :example/toggle-broadcast
+  [{:as ev-msg :keys [?reply-fn]}]
+  (let [loop-enabled? (swap! broadcast-enabled?_ not)]
+    (?reply-fn loop-enabled?)))
+(defmethod -event-msg-handler ::auth
+  [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  (let [session (:session ring-req)
+        uid (:uid session)]
+    (print "In clojure: " (str "Data: " ?data ", event " event))
+    (when ?reply-fn
+      (?reply-fn {:reply (auth (:key (second event)) (:secret (second event)))
+                  }))))
 
 ;; router functions
 (defonce router_ (atom nil))

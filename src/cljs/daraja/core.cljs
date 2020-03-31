@@ -8,8 +8,6 @@
     [taoensso.sente.packers.transit :as sente-transit]
     ))
 
-(println "This text is printed from src/daraja/core.cljs. Go ahead and edit it and see reloading in action.")
-
 (defn multiply [a b] (* a b))
 
 (let [packer :edn
@@ -24,24 +22,56 @@
 
 
 ;; define your app data so that it doesn't get over-written on reload
-(defonce app-state (atom {:text "Hello world!"}))
+(defonce app-state (reagent/atom {:text         "Hello world!"
+                                  :access-token nil}))
 
 
 (defn hello-world []
   [:div
    [:p (:text @app-state)]
-   [:p "Edit this in src/daraja/core.cljs and watch it change!"]
+   [:p "Authenticate"]
    [:button
-    {:on-click (fn [e] (do (chsk-send! [:example/test-rapid-push])
-                         (js/console.log "Sending request !!")))}
-    "Try this"]
+    {:on-click (fn [e] (chsk-send! [::auth {:key    ""
+                                            :secret ""}]
+                                   20000
+                                   (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+                                                    (let [access-token (:access-token cb-reply)
+                                                          expires (:expires_in cb-reply)]
+                                                      (swap! app-state assoc :access-token access-token)
+                                                      (js/console.log "Completed, " cb-reply))
+                                                    (js/console.error "Error")))))}
+    "Send with reply"]
    [:button
-    {:on-click (fn [e] (do (sente/chsk-disconnect! chsk)
-                         (js/console.log "Disconnecting !!")))}
+    {:on-click (fn [e] (chsk-send! [:daraja.core/button {:had-a-callback? "indeed"}]
+                                   5000
+                                   (fn [cb-reply] (print "Callback reply: %s" cb-reply))))}
+    "Send with reply"]
+   (when (:access-token @app-state)
+     [:p (:access-token @app-state)])
+   [:button
+    {:on-click (fn [e]
+                 (print "Rapid button was pushed")
+                 (chsk-send! [:example/test-rapid-push]))}
+    "Rapid test"]
+   [:button
+    {:on-click (fn [e] (chsk-send! [:daraja.core/button {:had-a-callback? "indeed"}]
+                                   5000
+                                   (fn [cb-reply]
+                                     (swap! app-state assoc :text (str cb-reply))
+                                     (print "Callback reply: %s" cb-reply))))}
+    "Broadcast test"]
+   [:button
+    {:on-click (fn [e] (chsk-send! [:example/toggle-broadcast] 5000
+                                   (fn [cb-reply]
+                                     (when (cb-success? cb-reply)
+                                       (let [loop-enabled? cb-reply]
+                                         (if loop-enabled?
+                                           (print "Async broadcast loop now enabled")
+                                           (print "Async broadcast loop now disabled")))))))}
     "Disconnect"]
    [:button
     {:on-click (fn [e] (do (sente/chsk-reconnect! chsk)
-                         (js/console.log "Reconnecting !!")))}
+                           (js/console.log "Reconnecting !!")))}
     "Reconnect"]])
 
 
@@ -89,7 +119,7 @@
 (defn mount
   []
   (let [container (.getElementById js/document "app")]
-    (reagent/render-component  [hello-world] container)))
+    (reagent/render-component [hello-world] container)))
 
 (mount)
 
