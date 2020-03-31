@@ -26,8 +26,8 @@
 
 (log/set-level! :info)
 
-(let [packer (sente-transit/get-transit-packer)
-      chsk-server (sente/make-channel-socket-server! (get-sch-adapter) {:packer packer
+(let [packer :edn
+      chsk-server (sente/make-channel-socket-server! (get-sch-adapter) {:packer        packer
                                                                         :csrf-token-fn nil})
       {:keys [ch-recv send-fn connected-uids ajax-post-fn ajax-get-or-ws-handshake-fn]} chsk-server]
   (def ring-ajax-post ajax-post-fn)
@@ -41,7 +41,7 @@
   (doseq [uid (:any @connected-uids)]
     (chsk-send! uid data)))
 
-;;(send-all! "Trial")
+(send-all! [::auth {:?data "Sicce"}])
 
 (add-watch connected-uids :connected-uids
            (fn [_ _ old new]
@@ -76,17 +76,17 @@
 (defonce current-root-dir (atom ""))
 
 (defroutes my-routes
-           (GET  "/" req (response/content-type
-                           {:status 200
-                            :session (if (session-uid req)
-                                       (:session req)
-                                       (assoc (:session req) :uid (unique-id)))
-                            :body (io/input-stream (io/resource "public/index.html"))}
-                           "text/html"))
+           (GET "/" req (response/content-type
+                          {:status  200
+                           :session (if (session-uid req)
+                                      (:session req)
+                                      (assoc (:session req) :uid (unique-id)))
+                           :body    (io/input-stream (io/resource "public/index.html"))}
+                          "text/html"))
            (GET "/token" req (json/generate-string {:csrf-token *anti-forgery-token*}))
-           (GET  "/chsk" req
-                 (debugf "/chsk got: %s" req)
-                 (ring-ajax-get-or-ws-handshake req))
+           (GET "/chsk" req
+             (debugf "/chsk got: %s" req)
+             (ring-ajax-get-or-ws-handshake req))
            (POST "/chsk" req (ring-ajax-post req))
            (route/resources "/" {:root "public"})
            (GET "*" req (let [reqpath (join-paths @current-root-dir (-> req :params :*))
@@ -121,12 +121,33 @@
     (doseq [i (range 100)]
       (chsk-send! uid [:fast-push/is-fast (str "hello " i "!!")]))))
 
-(defmulti -event-msg-handler :id)
+(defonce broadcast-enabled?_ (atom true))
+(defn start-example-broadcaster!
+  "As an example of server>user async pushes, setup a loop to broadcast an
+  event to all connected users every 10 seconds"
+  []
+  (let [broadcast!
+        (fn [i]
+          (let [uids (:any @connected-uids)]
+            (debugf "Broadcasting server>user: %s uids" (count uids))
+            (doseq [uid uids]
+              (chsk-send! uid
+                          [:some/broadcast
+                           {:what-is-this "An async broadcast pushed from server"
+                            :how-often "Every 10 seconds"
+                            :to-whom uid
+                            :i i}]))))]
 
+    (go-loop [i 0]
+      (<! (async/timeout 10000))
+      (when @broadcast-enabled?_ (broadcast! i))
+      (recur (inc i)))))
+
+;; event handlers
+(defmulti -event-msg-handler :id)
 (defn event-msg-handler [{:as ev-msg :keys [id ?data event]}]
   (tracef "Event: %s" event)
   (-event-msg-handler ev-msg))
-
 (defmethod -event-msg-handler :default
   [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
   (let [session (:session ring-req)
@@ -135,10 +156,7 @@
     (when ?reply-fn
       (?reply-fn {:umatched-event-as-echoed-from-from-server event}))))
 
-(defmethod -event-msg-handler :example/test-rapid-push
-  [ev-msg] (test-fast-server>user-pushes))
-
-
+;; router functions
 (defonce router_ (atom nil))
 (defn stop-router! [] (when-let [stop-fn @router_] (stop-fn)))
 (defn start-router! []
@@ -146,6 +164,7 @@
   (reset! router_
           (sente/start-server-chsk-router! ch-chsk event-msg-handler)))
 
+;; web server functions
 (defonce web-server_ (atom nil))
 (defn web-server-started? [] @web-server_)
 (defn stop-web-server! [] (when-let [stop-fn (:stop-fn @web-server_)] (stop-fn)))
@@ -177,12 +196,17 @@
 
 (defn start-server!
   ([]
+   (start-router!)
    (start-web-server! default-port)
-   (start-router!))
+   (start-example-broadcaster!)
+   )
   ([& [port]]
+   (start-router!)
    (start-web-server! (or port default-port))
-   (start-router!)))
+   (start-example-broadcaster!)
+   ))
 
-(defn -main []
-  (start-server! 10666)
-  )
+(defn -main
+  "For `lein run`, etc."
+  []
+  (start-server!))

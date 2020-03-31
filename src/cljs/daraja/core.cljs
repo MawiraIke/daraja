@@ -12,7 +12,7 @@
 
 (defn multiply [a b] (* a b))
 
-(let [packer (sente-transit/get-transit-packer)
+(let [packer :edn
       {:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket-client! "/chsk"
                                          {:type   :auto
