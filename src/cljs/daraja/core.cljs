@@ -22,13 +22,28 @@
 
 
 ;; define your app data so that it doesn't get over-written on reload
-(defonce app-state (reagent/atom {:text         "Hello world!"
-                                  :access-token nil}))
+(defonce app-state (atom {:text         "Hello world!"
+                          :access-token nil}))
 
 
 (defn hello-world []
   [:div
-   [:p (:text @app-state)]
+   ;; encode
+   [:p "Encode"]
+   [:button
+    {:on-click (fn [e]
+                 (chsk-send! [::encode {:string "Ike"}]
+                             20000
+                             (fn [cb-reply]
+                               (if (sente/cb-success? cb-reply)
+                                 (let [encoded-string (:reply cb-reply)]
+                                   (swap! app-state assoc :encoded-string encoded-string)
+                                   (js/console.log "Completed, " encoded-string))
+                                 (js/console.error "Error")))))}
+    "Encode"]
+   [:p ""]
+
+
    [:p "Authenticate"]
    [:button
     {:on-click (fn [e] (chsk-send! [::auth {:key    ""
@@ -40,12 +55,10 @@
                                                       (swap! app-state assoc :access-token access-token)
                                                       (js/console.log "Completed, " cb-reply))
                                                     (js/console.error "Error")))))}
-    "Send with reply"]
-   [:button
-    {:on-click (fn [e] (chsk-send! [:daraja.core/button {:had-a-callback? "indeed"}]
-                                   5000
-                                   (fn [cb-reply] (print "Callback reply: %s" cb-reply))))}
-    "Send with reply"]
+    "Authenticate"]
+   [:p ""]
+
+
    (when (:access-token @app-state)
      [:p (:access-token @app-state)])
    [:button

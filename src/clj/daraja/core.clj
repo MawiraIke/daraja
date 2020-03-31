@@ -163,14 +163,22 @@
   [{:as ev-msg :keys [?reply-fn]}]
   (let [loop-enabled? (swap! broadcast-enabled?_ not)]
     (?reply-fn loop-enabled?)))
+
+;; encode
+(defmethod -event-msg-handler ::encode
+  [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  (let [session (:session ring-req)
+        uid (:uid session)]
+    (when ?reply-fn
+      (?reply-fn {:reply (encode (:string (second event)))}))))
+
+;; authenticate
 (defmethod -event-msg-handler ::auth
   [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
   (let [session (:session ring-req)
         uid (:uid session)]
-    (print "In clojure: " (str "Data: " ?data ", event " event))
     (when ?reply-fn
-      (?reply-fn {:reply (auth (:key (second event)) (:secret (second event)))
-                  }))))
+      (?reply-fn {:reply (auth (:key (second event)) (:secret (second event)))}))))
 
 ;; router functions
 (defonce router_ (atom nil))
