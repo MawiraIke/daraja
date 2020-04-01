@@ -17,9 +17,7 @@
                  [ring "1.7.1"]
                  [ring/ring-defaults "0.3.2"]
                  [bk/ring-gzip "0.3.0"]
-                 [ring-cljsjs "0.2.0"]
-                 [com.cognitect/transit-clj  "0.8.313"]
-                 [com.cognitect/transit-cljs "0.8.256"]]
+                 [ring-cljsjs "0.2.0"]]
 
 
   :source-paths ["src/clj" "src/cljs"]
@@ -31,5 +29,7 @@
 
   :profiles {:dev {:dependencies [[com.bhauman/figwheel-main "0.2.3"]
                                   [com.bhauman/rebel-readline-cljs "0.1.4"]]
-                   }})
+                   }}
+  :main daraja.core
+  )
 
