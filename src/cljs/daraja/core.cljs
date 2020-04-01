@@ -27,7 +27,7 @@
                               :encode       nil}))
 
 (defn get-input-value [input-id]
-  (when-let [el (.getElementById js/document "encode")]
+  (when-let [el (.getElementById js/document input-id)]
     (.-value el)))
 
 (defn hello-world []
@@ -53,14 +53,24 @@
 
 
    [:p "Authenticate"]
+   [:input#key {:type "text" :placeholder "Key"}]
+   [:p ""]
+   [:input#secret {:type "text" :placeholder "Secret"}]
+   [:p ""]
+   (when-let [ss (:access-token @app-state)]
+     [:span (str "\t" " Access token, ") [:strong ss]])
+   [:p ""]
    [:button
-    {:on-click (fn [e] (chsk-send! [::auth {:key    ""
-                                            :secret ""}]
+    {:on-click (fn [e] (chsk-send! [::auth {:key    (get-input-value "key")
+                                            :secret (get-input-value "secret")}]
                                    20000
                                    (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                    (let [access-token (:access-token cb-reply)
+                                                    (let [cb-reply (:reply cb-reply)
+                                                          access-token (:access_token cb-reply)
                                                           expires (:expires_in cb-reply)]
-                                                      (swap! app-state assoc :access-token access-token)
+                                                      (swap! app-state assoc :access-token (if access-token
+                                                                                             access-token
+                                                                                             (str "Failed, " cb-reply)))
                                                       (js/console.log "Completed, " cb-reply))
                                                     (js/console.error "Error")))))}
     "Authenticate"]
