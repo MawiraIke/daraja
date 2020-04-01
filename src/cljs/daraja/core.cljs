@@ -22,9 +22,9 @@
 
 
 ;; define your app data so that it doesn't get over-written on reload
-(defonce app-state (reagent/atom {:text         "Hello world!"
-                                  :access-token nil
-                                  :encode       nil}))
+(def app-state (reagent/atom {:text         "Hello world!"
+                              :access-token nil
+                              :encode       nil}))
 
 (defn get-input-value [input-id]
   (when-let [el (.getElementById js/document "encode")]
@@ -34,7 +34,10 @@
   [:div
    ;; encode
    [:p "Encode"]
-   [:input#encode {:type     "text" :placeholder "Text"}]
+   [:input#encode {:type "text" :placeholder "Text"}]
+   (when-let [ss (:encoded-string @app-state)]
+     [:span (str "\t" " Encoded string, ") [:strong ss]])
+   [:p ""]
    [:button
     {:on-click (fn [e]
                  (chsk-send! [::encode {:string (get-input-value "encode")}]
@@ -42,7 +45,7 @@
                              (fn [cb-reply]
                                (if (sente/cb-success? cb-reply)
                                  (let [encoded-string (:reply cb-reply)]
-                                   ;;(swap! app-state assoc :encoded-string encoded-string)
+                                   (swap! app-state assoc :encoded-string encoded-string)
                                    (js/console.log "Completed, " encoded-string))
                                  (js/console.error "Error")))))}
     "Encode"]
