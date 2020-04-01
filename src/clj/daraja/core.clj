@@ -221,14 +221,10 @@
 (defn start-server!
   ([]
    (start-router!)
-   (start-web-server! default-port)
-   (start-example-broadcaster!)
-   )
+   (start-web-server! default-port))
   ([& [port]]
    (start-router!)
-   (start-web-server! (or port default-port))
-   (start-example-broadcaster!)
-   ))
+   (start-web-server! (or port default-port))))
 
 (defn -main
   "For `lein run`, etc."
