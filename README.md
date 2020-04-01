@@ -1,14 +1,27 @@
-# daraja
+## daraja
 
-FIXME: Write a one-line description of your library/project.
+A project to show example usage of [clojure-mpesa-wrapper](https://github.com/MawiraIke/clojure-mpesa-wrapper)
 
-## Overview
 
-FIXME: Write a paragraph about the library/project and highlight its goals.
+### Overview
+This project is still in development, contributions are welcome.
 
-## Development
+### Working endpoints 
+1. Base64 Encoding
+2. M-Pesa Auth
 
-To get an interactive development environment run:
+Looking to support all methods supported in the main repo
+
+### Production
+To run the production version without the repl run
+    
+    lein run
+    
+and watch the opened tab in your browser.
+
+### Development
+
+To get an interactive development environment with figwheel run:
 
     lein fig:build
 
@@ -29,9 +42,14 @@ To create a production build run:
 	lein clean
 	lein fig:min
 
+After this run lein to start the server from the server side (Clojure code) with
 
+    lein repl
+    
+After the server starts, load ```start-server!``` and watch for port ```10666``` or provide 
+a different port to ```start-server!```
 ## License
 
-Copyright © 2018 FIXME
+Copyright © 2020 Ike Mawira
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
