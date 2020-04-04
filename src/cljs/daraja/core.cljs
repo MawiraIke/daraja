@@ -107,18 +107,72 @@
      "Check balance"]
     [:p "--------------------"]
 
-   [:p "B2B API"]
-   [:button
-    {:on-click (fn [e] (chsk-send! [::b2b {:data ""}]
-                                   20000
-                                   (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                    (let [access-token (:access-token cb-reply)
-                                                          expires (:expires_in cb-reply)]
-                                                      (swap! app-state assoc :access-token access-token)
-                                                      (js/console.log "Completed, " cb-reply))
-                                                    (js/console.error "Error")))))}
-    "Send B2B request"]
-   [:p "--------------------"]
+    [:button
+     {:on-click (fn [e]
+                  (print "Rapid button was pushed")
+                  (chsk-send! [:example/test-rapid-push]))}
+     "Rapid test"]
+    [:button
+     {:on-click (fn [e] (chsk-send! [:daraja.core/button {:had-a-callback? "indeed"}]
+                                    5000
+                                    (fn [cb-reply]
+                                      (swap! app-state assoc :text (str cb-reply))
+                                      (print "Callback reply: %s" cb-reply))))}
+     "Broadcast test"]
+    [:button
+     {:on-click (fn [e] (chsk-send! [:example/toggle-broadcast] 5000
+                                    (fn [cb-reply]
+                                      (when (cb-success? cb-reply)
+                                        (let [loop-enabled? cb-reply]
+                                          (if loop-enabled?
+                                            (print "Async broadcast loop now enabled")
+                                            (print "Async broadcast loop now disabled")))))))}
+     "Disconnect"]
+    [:button
+     {:on-click (fn [e] (do (sente/chsk-reconnect! chsk)
+                            (js/console.log "Reconnecting !!")))}
+     "Reconnect"]]
+
+   ;; Column 2
+
+   [:div.column {:style {:float "left" :width "33%"}}
+
+    [:p "B2B API"]
+    [:input#b2b-initiator {:type "text" :placeholder "Initiator"}]
+    [:p ""]
+    [:input#b2b-security-credential {:type "text" :placeholder "Security credential"}]
+    [:p ""]
+    [:input#b2b-command-id {:type "text" :placeholder "Command id (Optional)"}]
+    [:p ""]
+    [:input#b2b-sender-id {:type "text" :placeholder "Sender Identifier Type (Optional)"}]
+    [:p ""]
+    [:input#b2b-receiver-id {:type "text" :placeholder "Receiver identifier type (Optional)"}]
+    [:p ""]
+    [:input#b2b-amount {:type "text" :placeholder "Amount"}]
+    [:p ""]
+    [:input#b2b-party-a {:type "text" :placeholder "Party A"}]
+    [:p ""]
+    [:input#b2b-party-b {:type "text" :placeholder "Party B"}]
+    [:p ""]
+    [:input#b2b-account-ref {:type "text" :placeholder "Account reference"}]
+    [:p ""]
+    [:input#b2b-remarks {:type "text" :placeholder "Remarks"}]
+    [:p ""]
+    [:input#b2b-queue-url {:type "text" :placeholder "Queue Url"}]
+    [:p ""]
+    [:input#b2b-result-url {:type "text" :placeholder "Result Url"}]
+    [:p ""]
+    [:button
+     {:on-click (fn [e] (chsk-send! [::b2b {:data ""}]
+                                    20000
+                                    (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+                                                     (let [access-token (:access-token cb-reply)
+                                                           expires (:expires_in cb-reply)]
+                                                       (swap! app-state assoc :access-token access-token)
+                                                       (js/console.log "Completed, " cb-reply))
+                                                     (js/console.error "Error")))))}
+     "Send B2B request"]
+    [:p "--------------------"]
 
     [:p "B2C Payment Request API"]
     [:button
