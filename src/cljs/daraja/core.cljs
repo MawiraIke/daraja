@@ -19,6 +19,7 @@
   (def chsk-send! send-fn)
   (def chsk-state state))
 
+(print "Reload")
 
 ;; define your app data so that it doesn't get over-written on reload
 (def app-state (reagent/atom {:text         "Hello world!"
@@ -30,63 +31,81 @@
     (.-value el)))
 
 (defn hello-world []
-  [:div
-   ;; encode
-   [:p "Encode"]
-   [:input#encode {:type "text" :placeholder "Text"}]
-   (when-let [ss (:encoded-string @app-state)]
-     [:span (str "\t" " Encoded string, ") [:strong ss]])
-   [:p ""]
-   [:button
-    {:on-click (fn [e]
-                 (chsk-send! [::encode {:string (get-input-value "encode")}]
-                             20000
-                             (fn [cb-reply]
-                               (if (sente/cb-success? cb-reply)
-                                 (let [encoded-string (:reply cb-reply)]
-                                   (swap! app-state assoc :encoded-string encoded-string)
-                                   (js/console.log "Completed, " encoded-string))
-                                 (js/console.error "Error")))))}
-    "Encode"]
-   [:p "--------------------"]
+  [:div.row {:after {:content ""
+                     :display "table"
+                     :clear "both"}}
+
+   ;; Column 1
+
+   [:div.column {:style {:float "left" :width "33%"}}
+    ;; encode
+    [:p "Encode"]
+    [:input#encode {:type "text" :placeholder "Text"}]
+    (when-let [ss (:encoded-string @app-state)]
+      [:span (str "\t" " Encoded string, ") [:strong ss]])
+    [:p ""]
+    [:button
+     {:on-click (fn [e]
+                  (chsk-send! [::encode {:string (get-input-value "encode")}]
+                              20000
+                              (fn [cb-reply]
+                                (if (sente/cb-success? cb-reply)
+                                  (let [encoded-string (:reply cb-reply)]
+                                    (swap! app-state assoc :encoded-string encoded-string)
+                                    (js/console.log "Completed, " encoded-string))
+                                  (js/console.error "Error")))))}
+     "Encode"]
+    [:p "--------------------"]
 
 
-   [:p "Authenticate"]
-   [:input#key {:type "text" :placeholder "Key"}]
-   [:p ""]
-   [:input#secret {:type "text" :placeholder "Secret"}]
-   [:p ""]
-   (when-let [ss (:access-token @app-state)]
-     [:span (str "\t" " Access token, ") [:strong ss]])
-   [:p ""]
-   [:button
-    {:on-click (fn [e] (chsk-send! [::auth {:key    (get-input-value "key")
-                                            :secret (get-input-value "secret")}]
-                                   20000
-                                   (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                    (let [cb-reply (:reply cb-reply)
-                                                          access-token (:access_token cb-reply)
-                                                          expires (:expires_in cb-reply)]
-                                                      (swap! app-state assoc :access-token (if access-token
-                                                                                             access-token
-                                                                                             (str "Failed, " cb-reply)))
-                                                      (js/console.log "Completed, " cb-reply))
-                                                    (js/console.error "Error")))))}
-    "Authenticate"]
-   [:p "--------------------"]
+    [:p "Authenticate"]
+    [:input#key {:type "text" :placeholder "Key"}]
+    [:p ""]
+    [:input#secret {:type "text" :placeholder "Secret"}]
+    [:p ""]
+    (when-let [ss (:access-token @app-state)]
+      [:span (str "\t" " Access token, ") [:strong ss]])
+    [:p ""]
+    [:button
+     {:on-click (fn [e] (chsk-send! [::auth {:key    (get-input-value "key")
+                                             :secret (get-input-value "secret")}]
+                                    20000
+                                    (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+                                                     (let [cb-reply (:reply cb-reply)
+                                                           access-token (:access_token cb-reply)
+                                                           expires (:expires_in cb-reply)]
+                                                       (swap! app-state assoc :access-token (if access-token
+                                                                                              access-token
+                                                                                              (str "Failed, " cb-reply)))
+                                                       (js/console.log "Completed, " cb-reply))
+                                                     (js/console.error "Error")))))}
+     "Authenticate"]
+    [:p "--------------------"]
 
-   [:p "Balance API"]
-   [:button
-    {:on-click (fn [e] (chsk-send! [::balance {:data ""}]
-                                   20000
-                                   (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                    (let [access-token (:access-token cb-reply)
-                                                          expires (:expires_in cb-reply)]
-                                                      (swap! app-state assoc :access-token access-token)
-                                                      (js/console.log "Completed, " cb-reply))
-                                                    (js/console.error "Error")))))}
-    "Check balance"]
-   [:p "--------------------"]
+    [:p "Balance API"]
+    [:input#bal-initiator {:type "text" :placeholder "Initiator"}]
+    [:p ""]
+    [:input#bal-short-code {:type "text" :placeholder "Short code"}]
+    [:p ""]
+    [:input#bal-queue-url {:type "text" :placeholder "Queue Url"}]
+    [:p ""]
+    [:input#bal-result-url {:type "text" :placeholder "Result Url"}]
+    [:p ""]
+    [:input#bal-security-credential {:type "text" :placeholder "Security credential"}]
+    [:p ""]
+    [:input#bal-remarks {:type "text" :placeholder "Remarks (Optional)"}]
+    [:p ""]
+    [:button
+     {:on-click (fn [e] (chsk-send! [::balance {:data ""}]
+                                    20000
+                                    (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+                                                     (let [access-token (:access-token cb-reply)
+                                                           expires (:expires_in cb-reply)]
+                                                       (swap! app-state assoc :access-token access-token)
+                                                       (js/console.log "Completed, " cb-reply))
+                                                     (js/console.error "Error")))))}
+     "Check balance"]
+    [:p "--------------------"]
 
    [:p "B2B API"]
    [:button
@@ -101,99 +120,75 @@
     "Send B2B request"]
    [:p "--------------------"]
 
-   [:p "B2C Payment Request API"]
-   [:button
-    {:on-click (fn [e] (chsk-send! [::b2c {:data ""}]
-                                   20000
-                                   (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                    (let [access-token (:access-token cb-reply)
-                                                          expires (:expires_in cb-reply)]
-                                                      (swap! app-state assoc :access-token access-token)
-                                                      (js/console.log "Completed, " cb-reply))
-                                                    (js/console.error "Error")))))}
-    "Send B2C request"]
-   [:p "--------------------"]
+    [:p "B2C Payment Request API"]
+    [:button
+     {:on-click (fn [e] (chsk-send! [::b2c {:data ""}]
+                                    20000
+                                    (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+                                                     (let [access-token (:access-token cb-reply)
+                                                           expires (:expires_in cb-reply)]
+                                                       (swap! app-state assoc :access-token access-token)
+                                                       (js/console.log "Completed, " cb-reply))
+                                                     (js/console.error "Error")))))}
+     "Send B2C request"]
+    [:p "--------------------"]
+    ]
 
-   [:p "C2B Register API"]
-   [:button
-    {:on-click (fn [e] (chsk-send! [::c2b {:data ""}]
-                                   20000
-                                   (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                    (let [access-token (:access-token cb-reply)
-                                                          expires (:expires_in cb-reply)]
-                                                      (swap! app-state assoc :access-token access-token)
-                                                      (js/console.log "Completed, " cb-reply))
-                                                    (js/console.error "Error")))))}
-    "C2B Register API"]
-   [:p "--------------------"]
+   ;; Column 3
+   [:div.column {:style {:float "left" :width "33%"}}
+    [:p "C2B Register API"]
+    [:button
+     {:on-click (fn [e] (chsk-send! [::c2b {:data ""}]
+                                    20000
+                                    (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+                                                     (let [access-token (:access-token cb-reply)
+                                                           expires (:expires_in cb-reply)]
+                                                       (swap! app-state assoc :access-token access-token)
+                                                       (js/console.log "Completed, " cb-reply))
+                                                     (js/console.error "Error")))))}
+     "C2B Register API"]
+    [:p "--------------------"]
 
-   [:p "C2B Sim API"]
-   [:button
-    {:on-click (fn [e] (chsk-send! [::c2bs {:data ""}]
-                                   20000
-                                   (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                    (let [access-token (:access-token cb-reply)
-                                                          expires (:expires_in cb-reply)]
-                                                      (swap! app-state assoc :access-token access-token)
-                                                      (js/console.log "Completed, " cb-reply))
-                                                    (js/console.error "Error")))))}
-    "C2B Simulate"]
-   [:p "--------------------"]
+    [:p "C2B Sim API"]
+    [:button
+     {:on-click (fn [e] (chsk-send! [::c2bs {:data ""}]
+                                    20000
+                                    (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+                                                     (let [access-token (:access-token cb-reply)
+                                                           expires (:expires_in cb-reply)]
+                                                       (swap! app-state assoc :access-token access-token)
+                                                       (js/console.log "Completed, " cb-reply))
+                                                     (js/console.error "Error")))))}
+     "C2B Simulate"]
+    [:p "--------------------"]
 
-   [:p "Lipa na Mpesa API"]
-   [:button
-    {:on-click (fn [e] (chsk-send! [::lipa {:data ""}]
-                                   20000
-                                   (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                    (let [access-token (:access-token cb-reply)
-                                                          expires (:expires_in cb-reply)]
-                                                      (swap! app-state assoc :access-token access-token)
-                                                      (js/console.log "Completed, " cb-reply))
-                                                    (js/console.error "Error")))))}
-    "Lipa na M-Pesa"]
-   [:p "--------------------"]
+    [:p "Lipa na Mpesa API"]
+    [:button
+     {:on-click (fn [e] (chsk-send! [::lipa {:data ""}]
+                                    20000
+                                    (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+                                                     (let [access-token (:access-token cb-reply)
+                                                           expires (:expires_in cb-reply)]
+                                                       (swap! app-state assoc :access-token access-token)
+                                                       (js/console.log "Completed, " cb-reply))
+                                                     (js/console.error "Error")))))}
+     "Lipa na M-Pesa"]
+    [:p "--------------------"]
 
-   [:p "Transaction Status"]
-   [:button
-    {:on-click (fn [e] (chsk-send! [::status {:data ""}]
-                                   20000
-                                   (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                    (let [access-token (:access-token cb-reply)
-                                                          expires (:expires_in cb-reply)]
-                                                      (swap! app-state assoc :access-token access-token)
-                                                      (js/console.log "Completed, " cb-reply))
-                                                    (js/console.error "Error")))))}
-    "Check Transaction status"]
-   [:p "--------------------"]
+    [:p "Transaction Status"]
+    [:button
+     {:on-click (fn [e] (chsk-send! [::status {:data ""}]
+                                    20000
+                                    (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+                                                     (let [access-token (:access-token cb-reply)
+                                                           expires (:expires_in cb-reply)]
+                                                       (swap! app-state assoc :access-token access-token)
+                                                       (js/console.log "Completed, " cb-reply))
+                                                     (js/console.error "Error")))))}
+     "Check Transaction status"]
+    [:p "--------------------"]]
 
-
-   (when (:access-token @app-state)
-     [:p (:access-token @app-state)])
-   [:button
-    {:on-click (fn [e]
-                 (print "Rapid button was pushed")
-                 (chsk-send! [:example/test-rapid-push]))}
-    "Rapid test"]
-   [:button
-    {:on-click (fn [e] (chsk-send! [:daraja.core/button {:had-a-callback? "indeed"}]
-                                   5000
-                                   (fn [cb-reply]
-                                     (swap! app-state assoc :text (str cb-reply))
-                                     (print "Callback reply: %s" cb-reply))))}
-    "Broadcast test"]
-   [:button
-    {:on-click (fn [e] (chsk-send! [:example/toggle-broadcast] 5000
-                                   (fn [cb-reply]
-                                     (when (cb-success? cb-reply)
-                                       (let [loop-enabled? cb-reply]
-                                         (if loop-enabled?
-                                           (print "Async broadcast loop now enabled")
-                                           (print "Async broadcast loop now disabled")))))))}
-    "Disconnect"]
-   [:button
-    {:on-click (fn [e] (do (sente/chsk-reconnect! chsk)
-                           (js/console.log "Reconnecting !!")))}
-    "Reconnect"]])
+   ])
 
 
 
