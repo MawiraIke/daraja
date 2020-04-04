@@ -37,11 +37,6 @@ To clean all compiled files:
 
 	lein clean
 
-To create a production build run:
-
-	lein clean
-	lein fig:min
-
 After this run lein to start the server from the server side (Clojure code) with
 
     lein repl
