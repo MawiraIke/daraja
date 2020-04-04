@@ -123,39 +123,15 @@
                                                        (js/console.log "Completed, " cb-reply))
                                                      (js/console.error "Error")))))}
      "Check balance"]
-    [:p "--------------------"]
-
-    [:button
-     {:on-click (fn [e]
-                  (print "Rapid button was pushed")
-                  (chsk-send! [:example/test-rapid-push]))}
-     "Rapid test"]
-    [:button
-     {:on-click (fn [e] (chsk-send! [:daraja.core/button {:had-a-callback? "indeed"}]
-                                    5000
-                                    (fn [cb-reply]
-                                      (swap! app-state assoc :text (str cb-reply))
-                                      (print "Callback reply: %s" cb-reply))))}
-     "Broadcast test"]
-    [:button
-     {:on-click (fn [e] (chsk-send! [:example/toggle-broadcast] 5000
-                                    (fn [cb-reply]
-                                      (when (cb-success? cb-reply)
-                                        (let [loop-enabled? cb-reply]
-                                          (if loop-enabled?
-                                            (print "Async broadcast loop now enabled")
-                                            (print "Async broadcast loop now disabled")))))))}
-     "Disconnect"]
-    [:button
-     {:on-click (fn [e] (do (sente/chsk-reconnect! chsk)
-                            (js/console.log "Reconnecting !!")))}
-     "Reconnect"]]
+    [:p "--------------------"]]
 
    ;; Column 2
 
    [:div.column {:style {:float "left" :width "33%"}}
 
     [:p "B2B API"]
+    [:input#b2b-access-t {:type "text" :placeholder "Access token"}]
+    [:p ""]
     [:input#b2b-initiator {:type "text" :placeholder "Initiator"}]
     [:p ""]
     [:input#b2b-security-credential {:type "text" :placeholder "Security credential"}]
@@ -180,13 +156,33 @@
     [:p ""]
     [:input#b2b-result-url {:type "text" :placeholder "Result Url"}]
     [:p ""]
+    (when-let [ss (:b2b @app-state)]
+      [:span (str "\t" " Response, ") [:strong ss]])
+    [:p ""]
     [:button
-     {:on-click (fn [e] (chsk-send! [::b2b {:data ""}]
+     {:on-click (fn [e] (chsk-send! [::b2b {:access-token             (get-input-value "b2b-access-t")
+                                            :initiator                (get-input-value "b2b-initiator")
+                                            :command-id               (get-input-value "b2b-command-id")
+                                            :amount                   (int (get-input-value "b2b-amount"))
+                                            :sender-identifier-type   (int (get-input-value "b2b-sender-id"))
+                                            :receiver-identifier-type (int (get-input-value "b2b-receiver-id"))
+                                            :party-a                  (int (get-input-value "b2b-party-a"))
+                                            :party-b                  (int (get-input-value "b2b-party-b"))
+                                            :account-reference        (get-input-value "b2b-account-ref")
+                                            :remarks                  (get-input-value "b2b-remarks")
+                                            :queue-url                (get-input-value "b2b-queue-url")
+                                            :result-url               (get-input-value "b2b-result-url")
+                                            :security-credential      (get-input-value "b2b-security-credential")}]
                                     20000
                                     (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                     (let [access-token (:access-token cb-reply)
-                                                           expires (:expires_in cb-reply)]
-                                                       (swap! app-state assoc :access-token access-token)
+                                                     (let [cb-reply (:reply cb-reply)
+                                                           original-conversation-id (:OriginatorConversationID cb-reply)
+                                                           conversation-id (:ConversationID cb-reply)
+                                                           response-code (:ResponseCode cb-reply)
+                                                           response-description (:ResponseDescription cb-reply)]
+                                                       (swap! app-state assoc :b2b (if conversation-id
+                                                                                         (str conversation-id ", " response-description)
+                                                                                         (str "Failed, " cb-reply)))
                                                        (js/console.log "Completed, " cb-reply))
                                                      (js/console.error "Error")))))}
      "Send B2B request"]
@@ -201,7 +197,7 @@
                                                            expires (:expires_in cb-reply)]
                                                        (swap! app-state assoc :access-token access-token)
                                                        (js/console.log "Completed, " cb-reply))
-                                                     (js/console.error "Error")))))}
+                                                     (js/console.error "Error", cb-reply)))))}
      "Send B2C request"]
     [:p "--------------------"]
     ]
@@ -258,7 +254,33 @@
                                                        (js/console.log "Completed, " cb-reply))
                                                      (js/console.error "Error")))))}
      "Check Transaction status"]
-    [:p "--------------------"]]
+    [:p "--------------------"]
+
+    [:button
+     {:on-click (fn [e]
+                  (print "Rapid button was pushed")
+                  (chsk-send! [:example/test-rapid-push]))}
+     "Rapid test"]
+    [:button
+     {:on-click (fn [e] (chsk-send! [:daraja.core/button {:had-a-callback? "indeed"}]
+                                    5000
+                                    (fn [cb-reply]
+                                      (swap! app-state assoc :text (str cb-reply))
+                                      (print "Callback reply: %s" cb-reply))))}
+     "Broadcast test"]
+    [:button
+     {:on-click (fn [e] (chsk-send! [:example/toggle-broadcast] 5000
+                                    (fn [cb-reply]
+                                      (when (cb-success? cb-reply)
+                                        (let [loop-enabled? cb-reply]
+                                          (if loop-enabled?
+                                            (print "Async broadcast loop now enabled")
+                                            (print "Async broadcast loop now disabled")))))))}
+     "Disconnect"]
+    [:button
+     {:on-click (fn [e] (do (sente/chsk-reconnect! chsk)
+                            (js/console.log "Reconnecting !!")))}
+     "Reconnect"]]
 
    ])
 
