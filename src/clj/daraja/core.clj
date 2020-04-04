@@ -29,6 +29,8 @@
   (mpesa/encode a-string))
 (defn auth [key-string secret-string]
   (mpesa/auth key-string secret-string))
+(defn balance [{:as v}]
+  (mpesa/balance v))
 
 (def default-port 10666)
 
@@ -86,6 +88,20 @@
                                       (assoc (:session req) :uid (unique-id)))
                            :body    (io/input-stream (io/resource "public/index.html"))}
                           "text/html"))
+           (GET "/success" req (response/content-type
+                                 {:status  200
+                                  :session (if (session-uid req)
+                                             (:session req)
+                                             (assoc (:session req) :uid (unique-id)))
+                                  :body    (io/input-stream (io/resource "public/index.html"))}
+                                 "text/html"))
+           (GET "/fail" req (response/content-type
+                              {:status  200
+                               :session (if (session-uid req)
+                                          (:session req)
+                                          (assoc (:session req) :uid (unique-id)))
+                               :body    (io/input-stream (io/resource "public/index.html"))}
+                              "text/html"))
            (GET "/token" req (json/generate-string {:csrf-token *anti-forgery-token*}))
            (GET "/chsk" req
              (debugf "/chsk got: %s" req)
@@ -179,6 +195,20 @@
         uid (:uid session)]
     (when ?reply-fn
       (?reply-fn {:reply (auth (:key (second event)) (:secret (second event)))}))))
+
+;; balance
+(defmethod -event-msg-handler ::balance
+  [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  (let [session (:session ring-req)
+        uid (:uid session)]
+    (when ?reply-fn
+      (?reply-fn {:reply (balance {:access-token        (:access-token (second event))
+                                   :initiator           (:initiator (second event))
+                                   :short-code          (:party-a (second event))
+                                   :security-credential (:security-credential (second event))
+                                   :remarks             (or (:remarks (second event)) nil)
+                                   :queue-url           (:queue-url (second event))
+                                   :result-url          (:result-url (second event))})}))))
 
 ;; router functions
 (defonce router_ (atom nil))
