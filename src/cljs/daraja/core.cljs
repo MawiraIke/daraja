@@ -33,7 +33,7 @@
 (defn hello-world []
   [:div.row {:after {:content ""
                      :display "table"
-                     :clear "both"}}
+                     :clear   "both"}}
 
    ;; Column 1
 
@@ -83,6 +83,8 @@
     [:p "--------------------"]
 
     [:p "Balance API"]
+    [:input#bal-access-t {:type "text" :placeholder "Access token"}]
+    [:p ""]
     [:input#bal-initiator {:type "text" :placeholder "Initiator"}]
     [:p ""]
     [:input#bal-short-code {:type "text" :placeholder "Short code"}]
@@ -95,13 +97,29 @@
     [:p ""]
     [:input#bal-remarks {:type "text" :placeholder "Remarks (Optional)"}]
     [:p ""]
+    (when-let [ss (:balance @app-state)]
+      [:span (str "\t" " Response, ") [:strong ss]])
+    [:p ""]
     [:button
-     {:on-click (fn [e] (chsk-send! [::balance {:data ""}]
+     {:on-click (fn [e] (chsk-send! [::balance {:access-token        (get-input-value "bal-access-t")
+                                                :party-a             (int (get-input-value "bal-short-code"))
+                                                :initiator           (get-input-value "bal-initiator")
+                                                :security-credential (get-input-value "bal-security-credential")
+                                                :remarks             (get-input-value "bal-remarks")
+                                                ;; use custom url here, make sure you use ngrok or localtunnel if
+                                                ;; you are using localhost
+                                                :queue-url           (get-input-value "bal-queue-url")
+                                                :result-url          (get-input-value "bal-result-url")}]
                                     20000
                                     (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                     (let [access-token (:access-token cb-reply)
-                                                           expires (:expires_in cb-reply)]
-                                                       (swap! app-state assoc :access-token access-token)
+                                                     (let [cb-reply (:reply cb-reply)
+                                                           original-conversation-id (:OriginatorConversationID cb-reply)
+                                                           conversation-id (:ConversationID cb-reply)
+                                                           response-code (:ResponseCode cb-reply)
+                                                           response-description (:ResponseDescription cb-reply)]
+                                                       (swap! app-state assoc :balance (if conversation-id
+                                                                                         (str conversation-id ", " response-description)
+                                                                                         (str "Failed, " cb-reply)))
                                                        (js/console.log "Completed, " cb-reply))
                                                      (js/console.error "Error")))))}
      "Check balance"]
