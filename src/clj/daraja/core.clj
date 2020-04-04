@@ -31,6 +31,8 @@
   (mpesa/auth key-string secret-string))
 (defn balance [{:as v}]
   (mpesa/balance v))
+(defn b2b [{:as v}]
+  (mpesa/b2b v))
 
 (def default-port 10666)
 
@@ -78,6 +80,11 @@
     (chsk-send! uid
                 [broadcast
                  (assoc message :to-whom uid)])))
+
+(defn return-nil-for-strings [a-string]
+  (if (or (nil? a-string) (= a-string ""))
+    nil
+    a-string))
 
 (defonce current-root-dir (atom ""))
 (defroutes my-routes
@@ -206,9 +213,29 @@
                                    :initiator           (:initiator (second event))
                                    :short-code          (:party-a (second event))
                                    :security-credential (:security-credential (second event))
-                                   :remarks             (or (:remarks (second event)) nil)
+                                   :remarks             (return-nil-for-strings (:remarks (second event)))
                                    :queue-url           (:queue-url (second event))
                                    :result-url          (:result-url (second event))})}))))
+
+;; b2b
+(defmethod -event-msg-handler ::b2b
+  [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  (let [session (:session ring-req)
+        uid (:uid session)]
+    (when ?reply-fn
+      (?reply-fn {:reply (b2b {:access-token             (:access-token (second event))
+                                   :initiator                (:initiator (second event))
+                                   :command-id               (return-nil-for-strings (:command-id (second event)))
+                                   :amount                   (:amount (second event))
+                                   :sender-identifier-type   (:sender-identifier-type (second event))
+                                   :receiver-identifier-type (:receiver-identifier-type (second event))
+                                   :party-a                  (:party-a (second event))
+                                   :party-b                  (:party-b (second event))
+                                   :account-reference        (:account-reference (second event))
+                                   :security-credential      (:security-credential (second event))
+                                   :remarks                  (return-nil-for-strings (:remarks (second event)))
+                                   :queue-url                (:queue-url (second event))
+                                   :result-url               (:result-url (second event))})}))))
 
 ;; router functions
 (defonce router_ (atom nil))
