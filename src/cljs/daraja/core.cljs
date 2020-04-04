@@ -5,7 +5,6 @@
     [taoensso.encore :refer-macros (have have?)]
     [taoensso.timbre :refer-macros (tracef debugf infof warnf errorf)]
     [taoensso.sente :as sente :refer (cb-success?)]
-    [taoensso.sente.packers.transit :as sente-transit]
     ))
 
 (defn multiply [a b] (* a b))
