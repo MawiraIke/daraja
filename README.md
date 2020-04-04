@@ -9,6 +9,10 @@ This project is still in development, contributions are welcome.
 ### Working endpoints 
 1. Base64 Encoding
 2. M-Pesa Auth
+3. Check balance API
+4. B2B API
+
+> The function parameters are demonstrated in clj/daraja.keys
 
 Looking to support all methods supported in the main repo
 
