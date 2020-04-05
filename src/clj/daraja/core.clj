@@ -33,7 +33,8 @@
   (mpesa/balance v))
 (defn b2b [{:as v}]
   (mpesa/b2b v))
-
+(defn b2c [{:as v}]
+  (mpesa/b2c v))
 (def default-port 10666)
 
 (log/set-level! :info)
@@ -224,18 +225,37 @@
         uid (:uid session)]
     (when ?reply-fn
       (?reply-fn {:reply (b2b {:access-token             (:access-token (second event))
-                                   :initiator                (:initiator (second event))
-                                   :command-id               (return-nil-for-strings (:command-id (second event)))
-                                   :amount                   (:amount (second event))
-                                   :sender-identifier-type   (:sender-identifier-type (second event))
-                                   :receiver-identifier-type (:receiver-identifier-type (second event))
-                                   :party-a                  (:party-a (second event))
-                                   :party-b                  (:party-b (second event))
-                                   :account-reference        (:account-reference (second event))
-                                   :security-credential      (:security-credential (second event))
-                                   :remarks                  (return-nil-for-strings (:remarks (second event)))
-                                   :queue-url                (:queue-url (second event))
-                                   :result-url               (:result-url (second event))})}))))
+                               :initiator                (:initiator (second event))
+                               :command-id               (return-nil-for-strings (:command-id (second event)))
+                               :amount                   (:amount (second event))
+                               :sender-identifier-type   (:sender-identifier-type (second event))
+                               :receiver-identifier-type (:receiver-identifier-type (second event))
+                               :party-a                  (:party-a (second event))
+                               :party-b                  (:party-b (second event))
+                               :account-reference        (:account-reference (second event))
+                               :security-credential      (:security-credential (second event))
+                               :remarks                  (return-nil-for-strings (:remarks (second event)))
+                               :queue-url                (:queue-url (second event))
+                               :result-url               (:result-url (second event))})}))))
+
+
+;; b2c
+(defmethod -event-msg-handler ::b2c
+  [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  (let [session (:session ring-req)
+        uid (:uid session)]
+    (when ?reply-fn
+      (?reply-fn {:reply (b2c {:access-token        (:access-token (second event))
+                               :initiator-name      (:initiator-name (second event))
+                               :command-id          (return-nil-for-strings (:command-id (second event)))
+                               :amount              (:amount (second event))
+                               :sender-party        (:sender-party (second event))
+                               :receiver-party      (:receiver-party (second event))
+                               :occasion            (return-nil-for-strings (:occasion (second event)))
+                               :security-credential (:security-credential (second event))
+                               :remarks             (return-nil-for-strings (:remarks (second event)))
+                               :queue-url           (:queue-url (second event))
+                               :result-url          (:result-url (second event))})}))))
 
 ;; router functions
 (defonce router_ (atom nil))

@@ -9,7 +9,7 @@
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.520"]
                  [reagent "0.8.1"]
-                 [clojure-mpesa-wrapper "1.0.2-SNAPSHOT"]
+                 [clojure-mpesa-wrapper "1.0.3-SNAPSHOT"]
                  [com.taoensso/sente "1.15.0"]
                  [aleph "0.4.6"]
                  [compojure "1.6.1"]
