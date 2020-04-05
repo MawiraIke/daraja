@@ -222,7 +222,7 @@
                                             :initiator-name      (get-input-value "b2c-initiator")
                                             :amount              (int (get-input-value "b2c-amount"))
                                             :sender-party        (int (get-input-value "b2c-sender-id"))
-                                            :receiver-party      (int (get-input-value "b2c-receiver-id"))
+                                            :receiver-party      (cljs.reader/read-string (get-input-value "b2c-receiver-id"))
                                             :queue-url           (get-input-value "b2c-queue-url")
                                             :result-url          (get-input-value "b2c-result-url")
                                             :security-credential (get-input-value "b2c-security-credential")
