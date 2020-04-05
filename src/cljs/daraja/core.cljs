@@ -30,6 +30,9 @@
   (when-let [el (.getElementById js/document input-id)]
     (.-value el)))
 
+(def column-styles {:style {:float "left" :width "25%"}})
+
+
 (defn hello-world []
   [:div.row {:after {:content ""
                      :display "table"
@@ -37,7 +40,7 @@
 
    ;; Column 1
 
-   [:div.column {:style {:float "left" :width "33%"}}
+   [:div.column column-styles
     ;; encode
     [:p "Encode"]
     [:input#encode {:type "text" :placeholder "Text"}]
@@ -127,7 +130,7 @@
 
    ;; Column 2
 
-   [:div.column {:style {:float "left" :width "33%"}}
+   [:div.column column-styles
 
     [:p "B2B API"]
     [:input#b2b-access-t {:type "text" :placeholder "Access token"}]
@@ -181,29 +184,69 @@
                                                            response-code (:ResponseCode cb-reply)
                                                            response-description (:ResponseDescription cb-reply)]
                                                        (swap! app-state assoc :b2b (if conversation-id
-                                                                                         (str conversation-id ", " response-description)
-                                                                                         (str "Failed, " cb-reply)))
+                                                                                     (str conversation-id ", " response-description)
+                                                                                     (str "Failed, " cb-reply)))
                                                        (js/console.log "Completed, " cb-reply))
                                                      (js/console.error "Error")))))}
      "Send B2B request"]
     [:p "--------------------"]
 
     [:p "B2C Payment Request API"]
+    [:input#b2c-access-t {:type "text" :placeholder "Access token"}]
+    [:p ""]
+    [:input#b2c-initiator {:type "text" :placeholder "Initiator"}]
+    [:p ""]
+    [:input#b2c-security-credential {:type "text" :placeholder "Security credential"}]
+    [:p ""]
+    [:input#b2c-command-id {:type "text" :placeholder "Command id (Optional)"}]
+    [:p ""]
+    [:input#b2c-sender-id {:type "text" :placeholder "Sender party"}]
+    [:p ""]
+    [:input#b2c-receiver-id {:type "text" :placeholder "Receiver party"}]
+    [:p ""]
+    [:input#b2c-amount {:type "text" :placeholder "Amount"}]
+    [:p ""]
+    [:input#b2c-remarks {:type "text" :placeholder "Remarks"}]
+    [:p ""]
+    [:input#b2c-queue-url {:type "text" :placeholder "Queue Url"}]
+    [:p ""]
+    [:input#b2c-result-url {:type "text" :placeholder "Result Url"}]
+    [:p ""]
+    [:input#b2c-occasion {:type "text" :placeholder "Occasion (Optional)"}]
+    [:p ""]
+    (when-let [ss (:b2c @app-state)]
+      [:span (str "\t" " Response, ") [:strong ss]])
+    [:p ""]
     [:button
-     {:on-click (fn [e] (chsk-send! [::b2c {:data ""}]
+     {:on-click (fn [e] (chsk-send! [::b2c {:access-token        (get-input-value "b2c-access-t")
+                                            :initiator-name      (get-input-value "b2c-initiator")
+                                            :amount              (int (get-input-value "b2c-amount"))
+                                            :sender-party        (int (get-input-value "b2c-sender-id"))
+                                            :receiver-party      (int (get-input-value "b2c-receiver-id"))
+                                            :queue-url           (get-input-value "b2c-queue-url")
+                                            :result-url          (get-input-value "b2c-result-url")
+                                            :security-credential (get-input-value "b2c-security-credential")
+                                            :occasion            (get-input-value "b2c-occasion")
+                                            :remarks             (get-input-value "b2c-remarks")
+                                            :command-id          (get-input-value "b2c-command-id")}]
                                     20000
                                     (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                     (let [access-token (:access-token cb-reply)
-                                                           expires (:expires_in cb-reply)]
-                                                       (swap! app-state assoc :access-token access-token)
+                                                     (let [cb-reply (:reply cb-reply)
+                                                           original-conversation-id (:OriginatorConversationID cb-reply)
+                                                           conversation-id (:ConversationID cb-reply)
+                                                           response-code (:ResponseCode cb-reply)
+                                                           response-description (:ResponseDescription cb-reply)]
+                                                       (swap! app-state assoc :b2c (if conversation-id
+                                                                                     (str conversation-id ", " response-description)
+                                                                                     (str "Failed, " cb-reply)))
                                                        (js/console.log "Completed, " cb-reply))
-                                                     (js/console.error "Error", cb-reply)))))}
+                                                     (js/console.error "Error")))))}
      "Send B2C request"]
     [:p "--------------------"]
     ]
 
    ;; Column 3
-   [:div.column {:style {:float "left" :width "33%"}}
+   [:div.column column-styles
     [:p "C2B Register API"]
     [:button
      {:on-click (fn [e] (chsk-send! [::c2b {:data ""}]
@@ -228,7 +271,10 @@
                                                        (js/console.log "Completed, " cb-reply))
                                                      (js/console.error "Error")))))}
      "C2B Simulate"]
-    [:p "--------------------"]
+    [:p "--------------------"]]
+
+   ;;column 4
+   [:div.column column-styles
 
     [:p "Lipa na Mpesa API"]
     [:button
@@ -280,7 +326,8 @@
     [:button
      {:on-click (fn [e] (do (sente/chsk-reconnect! chsk)
                             (js/console.log "Reconnecting !!")))}
-     "Reconnect"]]
+     "Reconnect"]
+    ]
 
    ])
 
