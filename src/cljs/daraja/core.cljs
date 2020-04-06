@@ -191,14 +191,23 @@
 
        (= (:selected @app-state) "C2B register")
        [:div
-        [:p "C2B Register API"]
+        (views/c2b-reg @app-state)
         [:button.btn.btn-dark.btn-sm
-         {:on-click (fn [e] (chsk-send! [::c2b {:data ""}]
+         {:on-click (fn [e] (chsk-send! [::c2b {:access-token     (get-input-value "c2b-access-t")
+                                                :short-code       (int (get-input-value "c2b-short-code"))
+                                                :response-type    (get-input-value "c2b-response-type")
+                                                :confirmation-url (get-input-value "c2b-confirmation-url")
+                                                :validation-url   (get-input-value "c2b-validation-url")
+                                                }]
                                         timeout
                                         (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                         (let [access-token (:access-token cb-reply)
-                                                               expires (:expires_in cb-reply)]
-                                                           (swap! app-state assoc :access-token access-token)
+                                                         (let [cb-reply (:reply cb-reply)
+                                                               original-conversation-id (:OriginatorConversationID cb-reply)
+                                                               conversation-id (:ConversationID cb-reply)
+                                                               response-description (:ResponseDescription cb-reply)]
+                                                           (swap! app-state assoc :c2b (if conversation-id
+                                                                                         (str conversation-id ", " response-description)
+                                                                                         (str "Failed, " cb-reply)))
                                                            (js/console.log "Completed, " cb-reply))
                                                          (js/console.error "Error")))))}
          "C2B Register API"]]

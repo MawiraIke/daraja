@@ -11,6 +11,8 @@ This project is still in development, contributions are welcome.
 2. M-Pesa Auth
 3. Check balance API
 4. B2B API
+5. B2C API
+6. C2B Register
 
 > The function parameters are demonstrated in clj/daraja.keys
 
