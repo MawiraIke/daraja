@@ -4,8 +4,9 @@
   [:div
    [:p "Encode"]
    [:input#encode {:type "text" :placeholder "Text"}]
-   (when-let [ss (:encoded-string app-state)]
-     [:span (str "\t" " Encoded string, ") [:strong ss]])
+   [:div
+    (when-let [ss (:encoded-string app-state)]
+      [:span (str "\t" " Encoded string, ") [:strong ss]])]
    [:p ""]])
 
 (defn authenticate-ui [app-state]
@@ -15,8 +16,9 @@
    [:p ""]
    [:input#secret {:type "text" :placeholder "Secret"}]
    [:p ""]
-   (when-let [ss (:access-token app-state)]
-     [:span (str "\t" " Access token, ") [:strong ss]])
+   [:div
+    (when-let [ss (:access-token app-state)]
+      [:span (str "\t" " Access token, ") [:strong ss]])]
    [:p ""]])
 
 (defn balance-ui [app-state]
@@ -36,8 +38,9 @@
    [:p ""]
    [:input#bal-remarks {:type "text" :placeholder "Remarks (Optional)"}]
    [:p ""]
-   (when-let [ss (:balance app-state)]
-     [:span (str "\t" " Response, ") [:strong ss]])
+   [:div
+    (when-let [ss (:balance app-state)]
+      [:span (str "\t" " Response, ") [:strong ss]])]
    [:p ""]
    ])
 
@@ -70,8 +73,9 @@
    [:p ""]
    [:input#b2b-result-url {:type "text" :placeholder "Result Url"}]
    [:p ""]
-   (when-let [ss (:b2b app-state)]
-     [:span (str "\t" " Response, ") [:strong ss]])
+   [:div
+    (when-let [ss (:b2b app-state)]
+      [:span (str "\t" " Response, ") [:strong ss]])]
    [:p ""]])
 
 (defn b2c [app-state]
@@ -99,7 +103,11 @@
    [:p ""]
    [:input#b2c-occasion {:type "text" :placeholder "Occasion (Optional)"}]
    [:p ""]
-   (when-let [ss (:b2c app-state)]
-     [:span (str "\t" " Response, ") [:strong ss]])
+   [:div
+    (when-let [ss (:b2c app-state)]
+      [:span (str "\t" " Response, ") [:strong ss]])]
    [:p ""]
    ])
+
+(defn c2b []
+  )
