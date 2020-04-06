@@ -8,8 +8,6 @@
     [daraja.views.views :as views]
     ))
 
-(defn multiply [a b] (* a b))
-
 (let [packer :edn
       {:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket-client! "/chsk"
@@ -73,13 +71,15 @@
       {:on-click (fn [e] (chsk-send! [::auth {:key    (get-input-value "key")
                                               :secret (get-input-value "secret")}]
                                      timeout
-                                     (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+                                     (fn [cb-reply] (if (sente/cb-success? cb-reply) ;; Checks for :chsk/closed,
+                                                      ;;                                 :chsk/timeout, :chsk/error
                                                       (let [cb-reply (:reply cb-reply)
                                                             access-token (:access_token cb-reply)
                                                             expires (:expires_in cb-reply)]
-                                                        (swap! app-state assoc :access-token (if access-token
-                                                                                               access-token
-                                                                                               (str "Failed, " cb-reply)))
+                                                        (swap! app-state assoc :access-token
+                                                               (if access-token
+                                                                 access-token
+                                                                 (str "Failed, " cb-reply)))
                                                         (js/console.log "Completed, " cb-reply))
                                                       (js/console.error "Error")))))}
       "Authenticate"]]
@@ -134,7 +134,8 @@
                                              :initiator-name      (get-input-value "b2c-initiator")
                                              :amount              (int (get-input-value "b2c-amount"))
                                              :sender-party        (int (get-input-value "b2c-sender-id"))
-                                             :receiver-party      (cljs.reader/read-string (get-input-value "b2c-receiver-id"))
+                                             :receiver-party      (cljs.reader/read-string
+                                                                    (get-input-value "b2c-receiver-id"))
                                              :queue-url           (get-input-value "b2c-queue-url")
                                              :result-url          (get-input-value "b2c-result-url")
                                              :security-credential (get-input-value "b2c-security-credential")
@@ -264,9 +265,6 @@
           :default
           (debugf "Push event from server: %s" ?data))))
 
-;; TODO Add (defmethod -event-msg-handler <event-id> [ev-msg] <body>)s here...
-
-;; Sente event router (our `event-msg-handler` loop)
 (def router_ (atom nil))
 (defn stop-router! []
   (when-let [stop-f @router_] (stop-f)))
@@ -275,16 +273,13 @@
   (reset! router_ (sente/start-client-chsk-router! ch-chsk event-msg-handler)))
 
 
-(defn mount
-  []
+(defn mount []
   (let [container (.getElementById js/document "app")]
     (reagent/render-component [hello-world] container)))
 
 (mount)
 
 (defn ^:after-load on-reload []
-  (mount)
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-  )
+  (mount))
 
 (start-router!)
