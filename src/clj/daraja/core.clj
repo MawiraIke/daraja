@@ -37,6 +37,8 @@
   (mpesa/b2c v))
 (defn c2b [{:as v}]
   (mpesa/c2b-reg v))
+(defn c2b-sim [{:as v}]
+  (mpesa/c2b-sim v))
 (def default-port 10666)
 
 (log/set-level! :info)
@@ -271,6 +273,20 @@
                                :response-type    (:response-type (second event))
                                :confirmation-url (:confirmation-url (second event))
                                :validation-url   (:validation-url (second event))})}))))
+
+
+;; c2b-sim
+(defmethod -event-msg-handler ::c2b-sim
+  [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  (let [session (:session ring-req)
+        uid (:uid session)]
+    (when ?reply-fn
+      (?reply-fn {:reply (c2b-sim {:access-token    (:access-token (second event))
+                                   :short-code      (:short-code (second event))
+                                   :command-id      (:command-id (second event))
+                                   :amount          (:amount (second event))
+                                   :msisdn          (:msisdn (second event))
+                                   :bill-ref-number (return-nil-for-strings (:bill-ref-number (second event)))})}))))
 
 ;; router functions
 (defonce router_ (atom nil))

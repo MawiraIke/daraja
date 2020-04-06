@@ -45,18 +45,17 @@
       (js/console.log "Completed, " cb-reply))
     (js/console.error "Error")))
 
-(def c2-button-fn
-  (fn [cb-reply ky]
-    (if (sente/cb-success? cb-reply)                        ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-      (let [cb-reply (:reply cb-reply)
-            original-conversation-id (:OriginatorConversationID cb-reply)
-            conversation-id (:ConversationID cb-reply)
-            response-description (:ResponseDescription cb-reply)]
-        (swap! app-state assoc ky (if conversation-id
-                                    (str conversation-id ", " response-description)
-                                    (str "Failed, " cb-reply)))
-        (js/console.log "Completed, " cb-reply))
-      (js/console.error "Error"))))
+(defn c2-button-fn [cb-reply ky]
+  (if (sente/cb-success? cb-reply)                          ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
+    (let [cb-reply (:reply cb-reply)
+          original-conversation-id (:OriginatorConversationID cb-reply)
+          conversation-id (:ConversationID cb-reply)
+          response-description (:ResponseDescription cb-reply)]
+      (swap! app-state assoc ky (if conversation-id
+                                  (str conversation-id ", " response-description)
+                                  (str "Failed, " cb-reply)))
+      (js/console.log "Completed, " cb-reply))
+    (js/console.error "Error")))
 
 (defn hello-world []
   [:div.container
@@ -220,12 +219,13 @@
        [:div
         (views/c2b-sim @app-state)
         [:button.btn.btn-dark.btn-sm
-         {:on-click (fn [e] (chsk-send! [::c2bs {:access-token    (get-input-value "c2b-sim-access-t")
-                                                 :short-code      (int (get-input-value "c2b-sim-short-code"))
-                                                 :command-id      (get-input-value "c2b-sim-command-id")
-                                                 :amount          (get-input-value "c2b-sim-amount")
-                                                 :msisdn          (get-input-value "c2b-sim-msisdn")
-                                                 :bill-ref-number (get-input-value "c2b-sim-bill-ref-number")}]
+         {:on-click (fn [e] (chsk-send! [::c2b-sim {:access-token    (get-input-value "c2b-sim-access-t")
+                                                    :short-code      (int (get-input-value "c2b-sim-short-code"))
+                                                    :command-id      (get-input-value "c2b-sim-command-id")
+                                                    :amount          (int (get-input-value "c2b-sim-amount"))
+                                                    :msisdn          (cljs.reader/read-string
+                                                                       (get-input-value "c2b-sim-msisdn"))
+                                                    :bill-ref-number (get-input-value "c2b-sim-bill-ref-number")}]
                                         timeout
                                         #(c2-button-fn % :c2b-sim)))}
          "C2B Simulate"]]
