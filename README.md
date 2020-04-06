@@ -13,6 +13,7 @@ This project is still in development, contributions are welcome.
 4. B2B API
 5. B2C API
 6. C2B Register
+7. C2B Simulate
 
 > The function parameters are demonstrated in clj/daraja.keys
 
