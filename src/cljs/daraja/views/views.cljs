@@ -109,5 +109,22 @@
    [:p ""]
    ])
 
-(defn c2b []
+(defn c2b-reg [app-state]
+  [:div
+   [:p "C2B Register API"]
+   [:input#c2b-access-t {:type "text" :placeholder "Access token"}]
+   [:p ""]
+   [:input#c2b-short-code {:type "text" :placeholder "Short code"}]
+   [:p ""]
+   [:input#c2b-response-type {:type "text" :placeholder "Response type"}]
+   [:p ""]
+   [:input#c2b-confirmation-url {:type "text" :placeholder "Confirmation Url"}]
+   [:p ""]
+   [:input#c2b-validation-url {:type "text" :placeholder "Validation Url"}]
+   [:p ""]
+   [:div
+    (when-let [ss (:c2b app-state)]
+      [:span (str "\t" " Response, ") [:strong ss]])]
+   [:p ""]
+   ]
   )
