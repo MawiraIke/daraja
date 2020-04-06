@@ -125,6 +125,25 @@
    [:div
     (when-let [ss (:c2b app-state)]
       [:span (str "\t" " Response, ") [:strong ss]])]
+   [:p ""]])
+
+(defn c2b-sim [app-state]
+  [:div
+   [:p "C2B Simulate API"]
+   [:input#c2b-sim-access-t {:type "text" :placeholder "Access token"}]
    [:p ""]
-   ]
-  )
+   [:input#c2b-sim-short-code {:type "text" :placeholder "Short code"}]
+   [:p ""]
+   [:input#c2b-sim-command-id {:type "text" :placeholder "Command Id"}]
+   [:p ""]
+   [:input#c2b-sim-amount {:type "text" :placeholder "Amount"}]
+   [:p ""]
+   [:input#c2b-sim-msisdn {:type "text" :placeholder "MSISDN"}]
+   [:p ""]
+   [:input#c2b-sim-bill-ref-number {:type "text" :placeholder "Bill Ref Number"}]
+   [:p ""]
+   [:div
+    (when-let [ss (:c2b-sim app-state)]
+      [:span (str "\t" " Response, ") [:strong ss]])]
+   [:p ""]
+   ])
