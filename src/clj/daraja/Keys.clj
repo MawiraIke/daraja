@@ -4,7 +4,7 @@
 (def result-url "http://0cef73d4.ngrok.io/success")
 (def access-token "")
 
-(def balance-credentials {:access-token access-token
+(def balance-credentials {:access-token                                          access-token
                           :party-a/short-code                                    600741
                           :initiator                                             "Safaricomapi"
                           :security-credential #_(daraja/encode "Safaricom741#") "Safaricom741#"
@@ -15,28 +15,44 @@
                           :queue-timeout-url                                     queue-timeout-url
                           :result-url                                            result-url})
 
-(def b2b-credentials {:access-token access-token
-                      :initiator "Safaricomapi"
-                      :amount 01
-                      :party-a 600741
-                      :party-b 600000
-                      :account-reference ""
+(def b2b-credentials {:access-token        access-token
+                      :initiator           "Safaricomapi"
+                      :amount              01
+                      :party-a             600741
+                      :party-b             600000
+                      :account-reference   ""
                       ;; use custom url here, make sure you use ngrok or localtunnel if
                       ;; you are using localhost
-                      :queue-url "http://0cef73d4.ngrok.io/fail"
-                      :result-url "http://0cef73d4.ngrok.io/success"
+                      :queue-url           "http://0cef73d4.ngrok.io/fail"
+                      :result-url          "http://0cef73d4.ngrok.io/success"
                       :security-credential ""})
 
 
-(def b2c-credentials {:access-token access-token
-                       :initiator-name "Safaricomapi"
-                       :amount 1
-                       :sender-party 600741
-                       :receiver-party 254708374149
-                       ;; use custom url here, make sure you use ngrok or localtunnel if
-                       ;; you are using localhost
-                       :queue-url "https://90991c74.ngrok.io/fail"
-                       :result-url "https://90991c74.ngrok.io/success"
-                       :occasion "No Info"
-                       :security-credential ""
-                       })
+(def b2c-credentials {:access-token        access-token
+                      :initiator-name      "Safaricomapi"
+                      :amount              1
+                      :sender-party        600741
+                      :receiver-party      254708374149
+                      ;; use custom url here, make sure you use ngrok or localtunnel if
+                      ;; you are using localhost
+                      :queue-url           "https://90991c74.ngrok.io/fail"
+                      :result-url          "https://90991c74.ngrok.io/success"
+                      :occasion            "No Info"
+                      :security-credential ""
+                      })
+
+(def c2b-reg {:access-token     access-token
+              :short-code       600741
+              :response-type    "Canceled"
+              ;; use custom url here, make sure you use ngrok or localtunnel if
+              ;; you are using localhost
+              :confirmation-url "https://bfb436a4.ngrok.io/conf"
+              :validation-url   "https://bfb436a4.ngrok.io/valid"})
+
+(def c2b-sim {:access-token    access-token
+              :short-code      600741
+              :command-id      "CustomerPayBillOnline"
+              :amount          1
+              :msisdn          254708374149
+              :bill-ref-number "174379"
+              })
