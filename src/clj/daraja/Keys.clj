@@ -28,7 +28,7 @@
                       :security-credential ""})
 
 
-(defn b2c-credentials {:access-token access-token
+(def b2c-credentials {:access-token access-token
                        :initiator-name "Safaricomapi"
                        :amount 1
                        :sender-party 600741
