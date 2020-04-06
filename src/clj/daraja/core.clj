@@ -35,6 +35,8 @@
   (mpesa/b2b v))
 (defn b2c [{:as v}]
   (mpesa/b2c v))
+(defn c2b [{:as v}]
+  (mpesa/c2b-reg v))
 (def default-port 10666)
 
 (log/set-level! :info)
@@ -256,6 +258,19 @@
                                :remarks             (return-nil-for-strings (:remarks (second event)))
                                :queue-url           (:queue-url (second event))
                                :result-url          (:result-url (second event))})}))))
+
+
+;; c2b
+(defmethod -event-msg-handler ::c2b
+  [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  (let [session (:session ring-req)
+        uid (:uid session)]
+    (when ?reply-fn
+      (?reply-fn {:reply (c2b {:access-token     (:access-token (second event))
+                               :short-code       (:short-code (second event))
+                               :response-type    (:response-type (second event))
+                               :confirmation-url (:confirmation-url (second event))
+                               :validation-url   (:validation-url (second event))})}))))
 
 ;; router functions
 (defonce router_ (atom nil))

@@ -194,7 +194,7 @@
         (views/c2b-reg @app-state)
         [:button.btn.btn-dark.btn-sm
          {:on-click (fn [e] (chsk-send! [::c2b {:access-token     (get-input-value "c2b-access-t")
-                                                :short-code       (get-input-value "c2b-short-code")
+                                                :short-code       (int (get-input-value "c2b-short-code"))
                                                 :response-type    (get-input-value "c2b-response-type")
                                                 :confirmation-url (get-input-value "c2b-confirmation-url")
                                                 :validation-url   (get-input-value "c2b-validation-url")
