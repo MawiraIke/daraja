@@ -32,7 +32,7 @@
 
 (def column-styles {:style {:float "left" :width "25%"}})
 
-(defn bal2bc-button-fn [cb-reply ky]
+(defn bal2bctrans-button-fn [cb-reply ky]
   (if (sente/cb-success? cb-reply)                          ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
     (let [cb-reply (:reply cb-reply)
           original-conversation-id (:OriginatorConversationID cb-reply)
@@ -113,7 +113,7 @@
                                                        (js/console.error "Error")))))}
        "Authenticate"]]
 
-     [:p ""]
+     [:p "Sente functions"]
      [:button.btn.btn-dark.btn-sm
       {:on-click (fn [e]
                    (print "Rapid button was pushed")
@@ -157,7 +157,7 @@
                                                     :queue-url           (get-input-value "bal-queue-url")
                                                     :result-url          (get-input-value "bal-result-url")}]
                                         timeout
-                                        #(bal2bc-button-fn % :balance)))}
+                                        #(bal2bctrans-button-fn % :balance)))}
          "Check balance"]]
 
        (= (:selected @app-state) "B2B")
@@ -178,7 +178,7 @@
                                                 :result-url               (get-input-value "b2b-result-url")
                                                 :security-credential      (get-input-value "b2b-security-credential")}]
                                         timeout
-                                        #(bal2bc-button-fn % :b2b)))}
+                                        #(bal2bctrans-button-fn % :b2b)))}
          "Send B2B request"]]
 
        (= (:selected @app-state) "B2C")
@@ -198,7 +198,7 @@
                                                 :remarks             (get-input-value "b2c-remarks")
                                                 :command-id          (get-input-value "b2c-command-id")}]
                                         timeout
-                                        #(bal2bc-button-fn % :b2c)))}
+                                        #(bal2bctrans-button-fn % :b2c)))}
          "Send B2C request"]]
 
        (= (:selected @app-state) "C2B register")
@@ -246,16 +246,21 @@
 
        (= (:selected @app-state) "Transaction status")
        [:div
-        [:p "Transaction Status"]
+        (views/trans @app-state)
         [:button.btn.btn-dark.btn-sm
-         {:on-click (fn [e] (chsk-send! [::status {:data ""}]
+         {:on-click (fn [e] (chsk-send! [::trans {:access-token        (get-input-value "trans-access-t")
+                                                   :security-credential (get-input-value "trans-security-credential")
+                                                   :initiator           (get-input-value "trans-initiator")
+                                                   :command-id          (get-input-value "trans-command-id")
+                                                   :transaction-id      (get-input-value "trans-trans-id")
+                                                   :party-a             (get-input-value "trans-party-a")
+                                                   :identifier-type     (get-input-value "trans-trans-iden")
+                                                   :result-url          (get-input-value "trans-result-url")
+                                                   :queue-timeout-url   (get-input-value "trans-queue-url")
+                                                   :remarks             (get-input-value "trans-remarks")
+                                                   :occasion            (get-input-value "trans-occasion")}]
                                         timeout
-                                        (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                         (let [access-token (:access-token cb-reply)
-                                                               expires (:expires_in cb-reply)]
-                                                           (swap! app-state assoc :access-token access-token)
-                                                           (js/console.log "Completed, " cb-reply))
-                                                         (js/console.error "Error")))))}
+                                        #(bal2bctrans-button-fn % :trans)))}
          "Check Transaction status"]])]]])
 
 
