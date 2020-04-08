@@ -39,6 +39,8 @@
   (mpesa/c2b-reg v))
 (defn c2b-sim [{:as v}]
   (mpesa/c2b-sim v))
+(defn tr-status [{:as v}]
+  (mpesa/transaction-status v))
 (def default-port 10666)
 
 (log/set-level! :info)
@@ -287,6 +289,25 @@
                                    :amount          (:amount (second event))
                                    :msisdn          (:msisdn (second event))
                                    :bill-ref-number (return-nil-for-strings (:bill-ref-number (second event)))})}))))
+
+
+;; transaction status
+(defmethod -event-msg-handler ::trans
+  [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  (let [session (:session ring-req)
+        uid (:uid session)]
+    (when ?reply-fn
+      (?reply-fn {:reply (tr-status {:access-token (:access-token (second event))
+                                   :security-credential (:security-credential (second event))
+                                   :initiator (:initiator (second event))
+                                   :command-id (return-nil-for-strings (:command-id (second event)))
+                                   :transaction-id (:transaction-id (second event))
+                                   :party-a (:party-a (second event))
+                                   :identifier-type (return-nil-for-strings (:identifier-type (second event)))
+                                   :result-url (:result-url (second event))
+                                   :queue-timeout-url  (:queue-timeout-url (second event))
+                                   :remarks (return-nil-for-strings (:remarks (second event)))
+                                   :occasion (return-nil-for-strings (:occasion (second event)))})}))))
 
 ;; router functions
 (defonce router_ (atom nil))
