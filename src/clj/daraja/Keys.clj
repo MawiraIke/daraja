@@ -56,3 +56,18 @@
               :msisdn          254708374149
               :bill-ref-number "174379"
               })
+
+(def transaction-status
+  {:access-token access-token
+   :security-credential ""
+   :initiator "Safaricomapi"
+   :command-id "TransactionStatusQuery"
+   :transaction-id "LX34LFD354"
+   :party-a "600741"
+   :identifier-type "1"
+   ;; use custom url here, make sure you use ngrok or localtunnel if
+   ;; you are using localhost
+   :result-url "https://8e5b5745.ngrok.io/res"
+   :queue-timeout-url  "https://8e5b5745.ngrok.io/timeout"
+   :remarks "Transaction Reversal"
+   :occasion "Transaction Reversal"})
