@@ -148,6 +148,33 @@
    [:p ""]
    ])
 
+(defn lipa [app-state]
+  [:div
+   [:p "Lipa na Mpesa API"]
+   [:input#lipa-a {:type "text" :placeholder "Access token"}]
+   [:p ""]
+   [:input#lipa-b {:type "text" :placeholder "Short code"}]
+   [:p ""]
+   [:input#lipa-c {:type "text" :placeholder "Transaction Type"}]
+   [:p ""]
+   [:input#lipa-d {:type "text" :placeholder "Amount"}]
+   [:p ""]
+   [:input#lipa-e {:type "text" :placeholder "Phone Number"}]
+   [:p ""]
+   [:input#lipa-f {:type "text" :placeholder "Callback Url"}]
+   [:p ""]
+   [:input#lipa-g {:type "text" :placeholder "Account reference (Optional)"}]
+   [:p ""]
+   [:input#lipa-h {:type "text" :placeholder "Transaction Description (Optional)"}]
+   [:p ""]
+   [:input#lipa-i {:type "text" :placeholder "Pass key"}]
+   [:p ""]
+   [:div
+    (when-let [ss (:lipa app-state)]
+      [:span (str "\t" " Response, ") [:strong ss]])]
+   [:p ""]
+   ])
+
 (defn trans [app-state]
   [:div
    [:p "Transaction Status"]
