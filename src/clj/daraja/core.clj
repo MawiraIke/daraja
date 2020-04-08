@@ -297,7 +297,7 @@
   (let [session (:session ring-req)
         uid (:uid session)]
     (when ?reply-fn
-      (?reply-fn {:reply (c2b-sim {:access-token (:access-token (second event))
+      (?reply-fn {:reply (tr-status {:access-token (:access-token (second event))
                                    :security-credential (:security-credential (second event))
                                    :initiator (:initiator (second event))
                                    :command-id (return-nil-for-strings (:command-id (second event)))

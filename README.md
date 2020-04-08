@@ -14,6 +14,7 @@ This project is still in development, contributions are welcome.
 5. B2C API
 6. C2B Register
 7. C2B Simulate
+8. Transaction status
 
 > The function parameters are demonstrated in clj/daraja.keys
 
