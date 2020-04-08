@@ -232,14 +232,25 @@
 
        (= (:selected @app-state) "Lipa na mpesa")
        [:div
-        [:p "Lipa na Mpesa API"]
+        (views/lipa @app-state)
         [:button.btn.btn-dark.btn-sm
-         {:on-click (fn [e] (chsk-send! [::lipa {:data ""}]
+         {:on-click (fn [e] (chsk-send! [::lipa {:access-token            (get-input-value "lipa-a")
+                                                 :short-code              (int (get-input-value "lipa-b"))
+                                                 :transaction-type        (get-input-value "lipa-c")
+                                                 :amount                  (int (get-input-value "lipa-d"))
+                                                 :phone-number            (cljs.reader/read-string (get-input-value "lipa-e"))
+                                                 :callback-url            (get-input-value "lipa-f")
+                                                 :account-reference       (get-input-value "lipa-g")
+                                                 :transaction-description (get-input-value "lipa-h")
+                                                 :passkey                 (get-input-value "lipa-i")}]
                                         timeout
                                         (fn [cb-reply] (if (sente/cb-success? cb-reply) ; Checks for :chsk/closed, :chsk/timeout, :chsk/error
-                                                         (let [access-token (:access-token cb-reply)
-                                                               expires (:expires_in cb-reply)]
-                                                           (swap! app-state assoc :access-token access-token)
+                                                         (let [merchant-request-id (:MerchantRequestID cb-reply)
+                                                               checkout-req (:CheckoutRequestID cb-reply)
+                                                               response-code (:ResponseCode cb-reply)
+                                                               response-desc (:ResponseDescription cb-reply)
+                                                               customer-message (:CustomerMessage cb-reply)]
+                                                           (swap! app-state assoc :lipa customer-message)
                                                            (js/console.log "Completed, " cb-reply))
                                                          (js/console.error "Error")))))}
          "Lipa na M-Pesa"]]
@@ -249,16 +260,16 @@
         (views/trans @app-state)
         [:button.btn.btn-dark.btn-sm
          {:on-click (fn [e] (chsk-send! [::trans {:access-token        (get-input-value "trans-access-t")
-                                                   :security-credential (get-input-value "trans-security-credential")
-                                                   :initiator           (get-input-value "trans-initiator")
-                                                   :command-id          (get-input-value "trans-command-id")
-                                                   :transaction-id      (get-input-value "trans-trans-id")
-                                                   :party-a             (get-input-value "trans-party-a")
-                                                   :identifier-type     (get-input-value "trans-trans-iden")
-                                                   :result-url          (get-input-value "trans-result-url")
-                                                   :queue-timeout-url   (get-input-value "trans-queue-url")
-                                                   :remarks             (get-input-value "trans-remarks")
-                                                   :occasion            (get-input-value "trans-occasion")}]
+                                                  :security-credential (get-input-value "trans-security-credential")
+                                                  :initiator           (get-input-value "trans-initiator")
+                                                  :command-id          (get-input-value "trans-command-id")
+                                                  :transaction-id      (get-input-value "trans-trans-id")
+                                                  :party-a             (get-input-value "trans-party-a")
+                                                  :identifier-type     (get-input-value "trans-trans-iden")
+                                                  :result-url          (get-input-value "trans-result-url")
+                                                  :queue-timeout-url   (get-input-value "trans-queue-url")
+                                                  :remarks             (get-input-value "trans-remarks")
+                                                  :occasion            (get-input-value "trans-occasion")}]
                                         timeout
                                         #(bal2bctrans-button-fn % :trans)))}
          "Check Transaction status"]])]]])

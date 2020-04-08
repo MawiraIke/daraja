@@ -41,6 +41,8 @@
   (mpesa/c2b-sim v))
 (defn tr-status [{:as v}]
   (mpesa/transaction-status v))
+(defn lipa [{:as v}]
+  (mpesa/lipa-na-mpesa v))
 (def default-port 10666)
 
 (log/set-level! :info)
@@ -297,17 +299,34 @@
   (let [session (:session ring-req)
         uid (:uid session)]
     (when ?reply-fn
-      (?reply-fn {:reply (tr-status {:access-token (:access-token (second event))
-                                   :security-credential (:security-credential (second event))
-                                   :initiator (:initiator (second event))
-                                   :command-id (return-nil-for-strings (:command-id (second event)))
-                                   :transaction-id (:transaction-id (second event))
-                                   :party-a (:party-a (second event))
-                                   :identifier-type (return-nil-for-strings (:identifier-type (second event)))
-                                   :result-url (:result-url (second event))
-                                   :queue-timeout-url  (:queue-timeout-url (second event))
-                                   :remarks (return-nil-for-strings (:remarks (second event)))
-                                   :occasion (return-nil-for-strings (:occasion (second event)))})}))))
+      (?reply-fn {:reply (tr-status {:access-token        (:access-token (second event))
+                                     :security-credential (:security-credential (second event))
+                                     :initiator           (:initiator (second event))
+                                     :command-id          (return-nil-for-strings (:command-id (second event)))
+                                     :transaction-id      (:transaction-id (second event))
+                                     :party-a             (:party-a (second event))
+                                     :identifier-type     (return-nil-for-strings (:identifier-type (second event)))
+                                     :result-url          (:result-url (second event))
+                                     :queue-timeout-url   (:queue-timeout-url (second event))
+                                     :remarks             (return-nil-for-strings (:remarks (second event)))
+                                     :occasion            (return-nil-for-strings (:occasion (second event)))})}))))
+
+
+;; lipa na mpesa
+(defmethod -event-msg-handler ::lipa
+  [{:as ev-msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  (let [session (:session ring-req)
+        uid (:uid session)]
+    (when ?reply-fn
+      (?reply-fn {:reply (lipa {:access-token            (:access-token (second event))
+                                :short-code              (:short-code (second event))
+                                :transaction-type        (return-nil-for-strings (:transaction-type (second event)))
+                                :amount                  (:amount (second event))
+                                :phone-number            (:phone-number (second event))
+                                :callback-url            (:callback-url (second event))
+                                :account-reference       (return-nil-for-strings (:account-reference (second event)))
+                                :transaction-description (return-nil-for-strings (:transaction-description (second event)))
+                                :passkey                 (:passkey (second event))})}))))
 
 ;; router functions
 (defonce router_ (atom nil))
