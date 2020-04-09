@@ -28,7 +28,6 @@
                       :result-url          "http://0cef73d4.ngrok.io/success"
                       :security-credential security-credential})
 
-
 (def b2c-credentials {:access-token        access-token
                       :initiator-name      "Safaricomapi"
                       :amount              1

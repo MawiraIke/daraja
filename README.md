@@ -4,9 +4,7 @@ A project to show example usage of [clojure-mpesa-wrapper](https://github.com/Ma
 
 
 ### Overview
-This project is still in development, contributions are welcome.
-
-### Working endpoints 
+#### Working endpoints 
 1. Base64 Encoding
 2. M-Pesa Auth
 3. Check balance API
@@ -17,9 +15,7 @@ This project is still in development, contributions are welcome.
 8. Transaction status
 9. Lipa na MPesa
 
-> The function parameters are demonstrated in clj/daraja.keys
-
-Looking to support all methods supported in the main repo
+> Example usages is demonstrated in clj/daraja.keys
 
 ### Production
 To run the production version without the repl run
